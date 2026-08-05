@@ -1,47 +1,45 @@
 // outputNode.js
 
-import { useState } from 'react';
-import { Handle, Position } from 'reactflow';
+import { useState, useEffect } from 'react';
+import { Position } from 'reactflow';
+import { BaseNode } from './BaseNode';
+import { useStore } from '../store';
 
-export const OutputNode = ({ id, data }) => {
+export const OutputNode = ({ id, data, selected }) => {
   const [currName, setCurrName] = useState(data?.outputName || id.replace('customOutput-', 'output_'));
-  const [outputType, setOutputType] = useState(data.outputType || 'Text');
+  const [outputType, setOutputType] = useState(data?.outputType || 'Text');
+  const updateNodeField = useStore((state) => state.updateNodeField);
 
-  const handleNameChange = (e) => {
-    setCurrName(e.target.value);
-  };
+  // Sync local state changes back to the global Zustand store
+  useEffect(() => {
+    updateNodeField(id, 'outputName', currName);
+  }, [currName, id, updateNodeField]);
 
-  const handleTypeChange = (e) => {
-    setOutputType(e.target.value);
-  };
+  useEffect(() => {
+    updateNodeField(id, 'outputType', outputType);
+  }, [outputType, id, updateNodeField]);
+
+  const handles = [
+    { type: 'target', position: Position.Left, id: `${id}-value` },
+  ];
 
   return (
-    <div style={{width: 200, height: 80, border: '1px solid black'}}>
-      <Handle
-        type="target"
-        position={Position.Left}
-        id={`${id}-value`}
-      />
-      <div>
-        <span>Output</span>
-      </div>
-      <div>
-        <label>
-          Name:
-          <input 
-            type="text" 
-            value={currName} 
-            onChange={handleNameChange} 
-          />
-        </label>
-        <label>
-          Type:
-          <select value={outputType} onChange={handleTypeChange}>
-            <option value="Text">Text</option>
-            <option value="File">Image</option>
-          </select>
-        </label>
-      </div>
-    </div>
+    <BaseNode id={id} label="Output" icon="📤" handles={handles} selected={selected}>
+      <label className="node-field">
+        <span>Name</span>
+        <input
+          type="text"
+          value={currName}
+          onChange={(e) => setCurrName(e.target.value)}
+        />
+      </label>
+      <label className="node-field">
+        <span>Type</span>
+        <select value={outputType} onChange={(e) => setOutputType(e.target.value)}>
+          <option value="Text">Text</option>
+          <option value="Image">Image</option>
+        </select>
+      </label>
+    </BaseNode>
   );
-}
+};

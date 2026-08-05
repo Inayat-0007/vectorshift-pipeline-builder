@@ -1,25 +1,38 @@
 // ui.js
-// Displays the drag-and-drop UI
-// --------------------------------------------------
+// Displays the drag-and-drop pipeline canvas with React Flow.
 
 import { useState, useRef, useCallback } from 'react';
 import ReactFlow, { Controls, Background, MiniMap } from 'reactflow';
 import { useStore } from './store';
 import { shallow } from 'zustand/shallow';
+
+// Node type imports
 import { InputNode } from './nodes/inputNode';
 import { LLMNode } from './nodes/llmNode';
 import { OutputNode } from './nodes/outputNode';
 import { TextNode } from './nodes/textNode';
+import { ConditionNode } from './nodes/ConditionNode';
+import { FilterNode } from './nodes/FilterNode';
+import { TransformNode } from './nodes/TransformNode';
+import { DatabaseNode } from './nodes/DatabaseNode';
+import { AuthNode } from './nodes/AuthNode';
 
 import 'reactflow/dist/style.css';
 
 const gridSize = 20;
 const proOptions = { hideAttribution: true };
+
+// All 9 registered node types
 const nodeTypes = {
   customInput: InputNode,
   llm: LLMNode,
   customOutput: OutputNode,
   text: TextNode,
+  condition: ConditionNode,
+  filter: FilterNode,
+  transform: TransformNode,
+  database: DatabaseNode,
+  auth: AuthNode,
 };
 
 const selector = (state) => ({
@@ -80,7 +93,7 @@ export const PipelineUI = () => {
             addNode(newNode);
           }
         },
-        [reactFlowInstance]
+        [reactFlowInstance, addNode, getNodeID]
     );
 
     const onDragOver = useCallback((event) => {
@@ -90,7 +103,7 @@ export const PipelineUI = () => {
 
     return (
         <>
-        <div ref={reactFlowWrapper} style={{width: '100wv', height: '70vh'}}>
+        <div ref={reactFlowWrapper} style={{width: '100vw', height: '70vh'}}>
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -105,9 +118,14 @@ export const PipelineUI = () => {
                 snapGrid={[gridSize, gridSize]}
                 connectionLineType='smoothstep'
             >
-                <Background color="#aaa" gap={gridSize} />
+                <Background color="#333" gap={gridSize} variant="dots" />
                 <Controls />
-                <MiniMap />
+                <MiniMap
+                  nodeStrokeColor="#6366f1"
+                  nodeColor="#1e1e2e"
+                  nodeBorderRadius={8}
+                  maskColor="rgba(0, 0, 0, 0.7)"
+                />
             </ReactFlow>
         </div>
         </>
